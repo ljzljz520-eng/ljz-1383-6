@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>榫隅木作 · 手作木作与定制站</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header>
+  <div class="brand">
+    <span class="logo">榫</span>
+    <div>
+      <h1>榫隅木作</h1>
+      <p class="tagline">手作家具 · 参数化定制 · 可追溯交付</p>
+    </div>
+  </div>
+  <nav>
+    <button data-tab="gallery" class="navbtn active">作品案例</button>
+    <button data-tab="workbench" class="navbtn">定制工作台</button>
+    <button data-tab="process" class="navbtn">流程与审批</button>
+    <button data-tab="acceptance" class="navbtn">验收场景</button>
+  </nav>
+  <div class="rolebox">
+    当前身份：
+    <select id="actorRole">
+      <option value="customer">客户</option>
+      <option value="shop">工坊（师傅）</option>
+    </select>
+    <input id="actorName" placeholder="姓名" value="林女士">
+  </div>
+</header>
+
+<main>
+  <!-- ========== 作品案例（公开） ========== -->
+  <section id="tab-gallery" class="tab active">
+    <div class="section-head">
+      <h2>公开作品案例</h2>
+      <p class="hint">仅展示客户<strong>单独授权</strong>的公开快照；预算、地址、姓名不在其中。</p>
+    </div>
+    <div id="caseGrid" class="case-grid"></div>
+
+    <div class="section-head" style="margin-top:26px">
+      <h2>材料 · 尺寸参考 · 使用情境</h2>
+      <p class="hint">材料目录公开可查：单价、库存料尺寸、活动层板最大跨距（防下垂）与备货周期。尺寸可毫米/英寸混填。</p>
+    </div>
+    <div id="materialGrid" class="case-grid"></div>
+    <div class="panel" style="margin-top:16px">
+      <h3 style="margin-top:0">常见使用情境与尺寸参考</h3>
+      <table class="dtbl">
+        <thead><tr><th>使用情境</th><th>参考外宽 W</th><th>参考外高 H</th><th>参考外深 D</th><th>注意（系统会自动诊断）</th></tr></thead>
+        <tbody>
+          <tr><td>玄关鞋柜</td><td>700–900 mm（~28–35 in）</td><td>1100–1300 mm</td><td>320–360 mm</td><td>层板跨距小，松木即可；深度别过大以免取物不便</td></tr>
+          <tr><td>客厅书柜</td><td>800–1200 mm</td><td>1900–2200 mm</td><td>300–380 mm</td><td>A4 文件夹需净深≥300；宽&gt;约936mm 橡木活动层板会超跨距，需中立板（人工图纸项）</td></tr>
+          <tr><td>餐边/电视柜</td><td>1400–2000 mm</td><td>450–700 mm</td><td>350–450 mm</td><td>宽高比偏大触发稳定性提醒；大件交期 +5 工作日</td></tr>
+          <tr><td>衣柜</td><td>900–1800 mm</td><td>2100–2400 mm</td><td>550–600 mm</td><td>挂衣净深；门板可能 &gt;650mm 需重型铰链（人工确认）</td></tr>
+        </tbody>
+      </table>
+      <p class="hint">这些是参考区间而非承诺：最终以参数化引擎核算 + 人工图纸审批 + 获批版本绑定的报价/交期/保养为准。</p>
+    </div>
+  </section>
+
+  <!-- ========== 定制工作台 ========== -->
+  <section id="tab-workbench" class="tab">
+    <div class="wb-layout">
+      <div class="wb-left panel">
+        <h2>① 项目</h2>
+        <div class="row"><button id="btnLoadDemo" class="btn">载入演示项目</button>
+          <button id="btnNewProject" class="btn ghost">新建定制</button></div>
+        <div id="projectInfo" class="project-info muted">尚未载入项目。</div>
+
+        <h2 style="margin-top:18px">② 尺寸与规格</h2>
+        <p class="hint">宽 / 高 / 深可<strong>毫米与英寸混填</strong>（内部统一 mm，1in=25.4mm）。改变外宽会级联到门板、内宽、层板与材料用量。</p>
+        <div class="grid3">
+          <label>外宽 W
+            <span class="diminput"><input id="wVal" value="900"><select id="wUnit"><option value="mm">mm</option><option value="in">in</option></select></span>
+          </label>
+          <label>外高 H
+            <span class="diminput"><input id="hVal" value="2000"><select id="hUnit"><option value="mm">mm</option><option value="in">in</option></select></span>
+          </label>
+          <label>外深 D
+            <span class="diminput"><input id="dVal" value="380"><select id="dUnit"><option value="mm">mm</option><option value="in">in</option></select></span>
+          </label>
+        </div>
+        <div class="grid3">
+          <label>门数
+            <select id="doorCount"><option>1</option><option selected>2</option><option>3</option><option>4</option></select>
+          </label>
+          <label>活动层板数
+            <input id="shelfCount" type="number" min="0" value="4">
+          </label>
+          <label>材料
+            <select id="material"></select>
+          </label>
+        </div>
+        <div class="grid3">
+          <label>涂饰
+            <select id="finish"><option value="oil">木蜡油</option><option value="lacquer">清漆</option><option value="paint">混油色漆</option></select>
+          </label>
+          <label>门宽覆盖(mm, 可选·超约束)
+            <input id="doorOv" placeholder="留空=自动派生">
+          </label>
+          <label>内宽覆盖(mm, 可选)
+            <input id="innerOv" placeholder="留空=自动派生">
+          </label>
+        </div>
+        <div class="row">
+          <button id="btnCalc" class="btn primary">实时试算 / 依赖与诊断</button>
+          <button id="btnSaveRev" class="btn">存为新版本</button>
+        </div>
+
+        <h3 class="private-h">③ 私人信息（不进入公开案例）</h3>
+        <div class="grid2">
+          <label>私人预算（元）<input id="budget" type="number" placeholder="仅双方可见"></label>
+          <label>交付地址<input id="address" placeholder="仅双方可见"></label>
+        </div>
+      </div>
+
+      <div class="wb-mid panel">
+        <h2>可解释依赖计算</h2>
+        <div id="issues"></div>
+        <table class="dtbl" id="derivedTable"><thead><tr><th>派生项</th><th>值</th><th>计算公式 / 依赖</th></tr></thead><tbody></tbody></table>
+
+        <h2 style="margin-top:16px">材料清单 BOM（用量联动）</h2>
+        <table class="dtbl" id="bomTable"><thead><tr><th>部件</th><th>规格</th><th>数量</th><th>金额</th></tr></thead><tbody></tbody></table>
+      </div>
+
+      <div class="wb-right panel">
+        <h2>报价 / 交期 / 保养</h2>
+        <div id="quoteBox" class="muted">试算后显示；<strong>仅在版本获批并确认后绑定</strong>。</div>
+
+        <h2 style="margin-top:16px">④ 版本与审批</h2>
+        <div id="revList" class="revlist muted">无版本</div>
+        <div id="revActions" class="actions"></div>
+        <div id="revDetail"></div>
+
+        <h2 style="margin-top:16px">⑤ 受影响项 / 需重审</h2>
+        <div id="impactBox" class="muted">改尺寸或替代材料后，这里列出受影响派生项、BOM 变化与必须重审的内容。</div>
+
+        <h2 style="margin-top:16px">⑥ 发布与交付</h2>
+        <div class="actions">
+          <button id="btnPublish" class="btn small">授权发布公开案例（快照）</button>
+          <button id="btnDeliver" class="btn small">生成交付包</button>
+        </div>
+        <div id="pubDeliver"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 流程 ========== -->
+  <section id="tab-process" class="tab">
+    <div class="panel">
+      <h2>参数化规格 × 人工图纸审批：混合流程</h2>
+      <div id="processInfo" class="process-grid"></div>
+      <h3>状态机</h3>
+      <div class="flow">
+        <span class="chip">draft 草稿</span>→<span class="chip">pending_review 待审批（锁定）</span>→
+        <span class="chip">approved 工坊批准（人工图纸通过）</span>→<span class="chip ok">confirmed 客户确认（报价/交期/保养绑定）</span>→
+        <span class="chip">work_order 工单</span>→<span class="chip ok">交付包</span>
+      </div>
+      <p class="hint">批准后客户改尺寸或材料替代：自动生成<strong>后继版本</strong>，旧版置 superseded，旧批准/确认失效，须重新审批与确认。</p>
+    </div>
+  </section>
+
+  <!-- ========== 验收场景 ========== -->
+  <section id="tab-acceptance" class="tab">
+    <div class="panel">
+      <h2>验收场景一键演示</h2>
+      <p class="hint">每个场景通过真实 API 端到端跑通，逐步打印结果。亦可运行 <code>node test/acceptance.js</code>。</p>
+      <div class="scenario-grid">
+        <button class="btn scenario" data-s="mixed_units">1. 毫米/英寸混填 + 超约束诊断</button>
+        <button class="btn scenario" data-s="concurrent">2. 双方同时改稿（锁与冲突）</button>
+        <button class="btn scenario" data-s="substitute">3. 材料替代（重算重批）</button>
+        <button class="btn scenario" data-s="cancel">4. 工单启动后撤销（人工评估）</button>
+        <button class="btn scenario" data-s="late">5. 附件晚到（确认后才入包）</button>
+        <button class="btn scenario" data-s="resize">6. 改尺寸→旧确认失效→受影响项</button>
+        <button class="btn scenario" data-s="privacy">7. 私人预算/地址不泄漏 + 交付追溯</button>
+      </div>
+      <pre id="scenarioLog" class="log">点击上方场景开始…</pre>
+    </div>
+  </section>
+</main>
+<footer>榫隅木作 · 系统不自动提供危险加工操作，均由有资质师傅在人工图纸审批中评估留痕</footer>
+<script src="app.js"></script>
+<script src="scenarios.js"></script>
+</body>
+</html>
