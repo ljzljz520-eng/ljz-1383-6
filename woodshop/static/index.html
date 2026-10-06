@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>木语工坊 · 手作木作与定制</title>
+<style>
+:root{--ink:#2c241b;--paper:#f7f3ec;--accent:#8a5a2b;--line:#ddd2c2;--ok:#2e7d32;--warn:#b26a00;--err:#b3261e}
+*{box-sizing:border-box}body{margin:0;font-family:"Songti SC","Noto Serif CJK SC",serif;background:var(--paper);color:var(--ink)}
+header{background:#3a2d1f;color:#f3e9d8;padding:14px 22px;display:flex;gap:18px;align-items:baseline;flex-wrap:wrap}
+header h1{font-size:20px;margin:0}header small{opacity:.75}
+nav{display:flex;gap:8px;margin-left:auto}
+nav button{background:transparent;border:1px solid #6b5638;color:#f3e9d8;padding:6px 14px;border-radius:18px;cursor:pointer}
+nav button.on{background:#8a5a2b;border-color:#8a5a2b}
+main{max-width:1080px;margin:22px auto;padding:0 16px}
+section{display:none}section.on{display:block}
+.card{background:#fffdf8;border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:16px}
+.card h3{margin:0 0 10px;font-size:16px;border-left:4px solid var(--accent);padding-left:8px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
+label{font-size:12px;color:#6d5c44;display:block;margin-bottom:2px}
+input,select,textarea{width:100%;padding:7px 8px;border:1px solid var(--line);border-radius:6px;background:#fff;font-size:14px}
+textarea{min-height:54px}
+.dimrow{display:flex;gap:6px}.dimrow input{flex:1}.dimrow select{width:70px;flex:none}
+button.act{background:var(--accent);color:#fff;border:0;padding:8px 16px;border-radius:6px;cursor:pointer;font-size:14px}
+button.ghost{background:#fff;color:var(--accent);border:1px solid var(--accent);padding:6px 12px;border-radius:6px;cursor:pointer}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+.badge{display:inline-block;padding:1px 8px;border-radius:10px;font-size:12px;background:#eee}
+.b-ok{background:#dff0df;color:var(--ok)}.b-warn{background:#fbeed3;color:var(--warn)}.b-err{background:#f8dcd9;color:var(--err)}
+.diag{border-left:4px solid;padding:8px 10px;margin:6px 0;background:#fff}
+.diag.error{border-color:var(--err)}.diag.warning{border-color:var(--warn)}
+.diag .sug{color:#4a6b3a;font-size:13px;margin-top:4px}
+pre{background:#2c241b;color:#e8ddc9;padding:10px;border-radius:8px;font-size:12px;overflow:auto;max-height:320px}
+.priv{color:var(--warn);font-size:12px}
+.muted{color:#8a7a5f;font-size:12px}
+.case{border:1px solid var(--line);border-radius:10px;padding:14px;background:#fffdf8}
+.flex{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+h4{margin:14px 0 6px}
+</style>
+</head>
+<body>
+<header>
+  <h1>木语工坊</h1><small>手作木作 · 参数化定制 · 人工图纸审批混合流程</small>
+  <nav>
+    <button data-tab="cases" class="on">作品展示</button>
+    <button data-tab="custom">我要定制</button>
+    <button data-tab="bench">工坊后台</button>
+  </nav>
+</header>
+<main>
+<section id="tab-cases" class="on">
+  <div class="card"><h3>公开作品（单独授权快照 · 不含客户预算与地址）</h3>
+    <div id="cases" class="grid"></div>
+  </div>
+</section>
+
+<section id="tab-custom">
+  <div class="card"><h3>定制需求</h3>
+    <div class="grid">
+      <div><label>作品标题</label><input id="c-title" value="玄关壁挂柜"></div>
+      <div><label>称呼</label><input id="c-name" value="林女士"></div>
+      <div><label>联系方式</label><input id="c-contact" value="138****0000"></div>
+      <div><label>送货地址 <span class="priv">私密，不公开</span></label><input id="c-addr" value="杭州市西湖区…"></div>
+      <div><label>预算（元）<span class="priv">私密，不公开</span></label><input id="c-budget" value="6000"></div>
+      <div><label>主材</label><select id="c-mat"></select></div>
+    </div>
+    <h4>尺寸（毫米/厘米/英寸可混填，如 760、76cm、30in）</h4>
+    <div class="grid" id="c-dims"></div>
+    <h4>锁定派生尺寸（可选；与基础尺寸矛盾时系统会给出诊断）</h4>
+    <div class="grid" id="c-locks"></div>
+    <div style="margin-top:10px"><label>备注 / 使用情境</label><textarea id="c-notes">放在玄关，放钥匙与信件，希望门板平整。</textarea></div>
+    <div class="flex" style="margin-top:10px">
+      <button class="act" onclick="createDesign()">提交定制需求</button>
+      <span class="muted" id="c-msg"></span>
+    </div>
+  </div>
+  <div class="card" id="c-result" style="display:none"><h3>计算结果与诊断</h3><div id="c-out"></div></div>
+</section>
+
+<section id="tab-bench">
+  <div class="card"><h3>选择设计</h3>
+    <div class="flex">
+      <input id="b-did" style="width:120px" placeholder="设计 ID">
+      <button class="ghost" onclick="loadDesign()">载入</button>
+      <span class="muted" id="b-meta"></span>
+    </div>
+  </div>
+  <div id="bench" style="display:none">
+    <div class="card"><h3>修订记录（乐观并发：编辑需带 base_version）</h3>
+      <div id="b-revs"></div>
+      <h4>基于最新版发起新修订</h4>
+      <div class="flex">
+        <span>base_version: <b id="b-base">-</b></span>
+        <label style="margin:0">身份
+          <select id="b-actor" style="width:110px"><option value="customer">客户</option><option value="maker">工坊</option></select>
+        </label>
+      </div>
+      <div class="grid" id="b-dims" style="margin-top:8px"></div>
+      <h4>锁定派生尺寸</h4>
+      <div class="grid" id="b-locks"></div>
+      <div class="flex" style="margin-top:10px">
+        <button class="ghost" onclick="dryCompute()">试算（不入库）</button>
+        <button class="act" onclick="saveRevision()">保存新修订</button>
+        <span class="muted" id="b-msg"></span>
+      </div>
+      <div id="b-compute"></div>
+    </div>
+    <div class="card"><h3>审批 / 确认单 / 工单</h3>
+      <div class="flex">
+        <input id="b-approver" style="width:120px" value="匠人·王" placeholder="审批人">
+        <input id="b-drawing" style="width:160px" placeholder="人工图纸审批人（必填）">
+        <button class="act" onclick="approve()">审批最新修订</button>
+        <button class="ghost" onclick="toolpath()">请求加工路径（应被拒）</button>
+      </div>
+      <div id="b-confs" style="margin-top:10px"></div>
+      <div id="b-wos"></div>
+    </div>
+    <div class="card"><h3>材料替代 / 附件 / 交付包</h3>
+      <div class="flex">
+        <select id="b-submat" style="width:200px"></select>
+        <button class="ghost" onclick="substitute()">发起材料替代</button>
+        <select id="b-attkind" style="width:150px">
+          <option value="drawing_pdf">图纸 PDF</option>
+          <option value="cutlist_csv">开料单 CSV</option>
+          <option value="care_card_pdf">保养卡 PDF</option>
+        </select>
+        <input id="b-delay" style="width:110px" value="1500" title="模拟晚到毫秒">
+        <button class="ghost" onclick="genAttachment()">异步生成附件</button>
+        <button class="ghost" onclick="deliveryPackage()">查看交付包</button>
+      </div>
+      <div id="b-atts" style="margin-top:8px"></div>
+      <div id="b-pkg"></div>
+    </div>
+    <div class="card"><h3>影响分析（受影响项与需重审内容）</h3><div id="b-impact"></div></div>
+    <div class="card"><h3>发布公开案例（单独授权快照）</h3>
+      <div class="grid">
+        <div><label>公开标题</label><input id="p-title" value="玄关壁挂柜 · 橡木"></div>
+        <div><label>展示尺寸？</label><select id="p-dims"><option value="1">展示</option><option value="0">不展示</option></select></div>
+        <div><label>展示材料？</label><select id="p-mat"><option value="1">展示</option><option value="0">不展示</option></select></div>
+      </div>
+      <label>故事</label><textarea id="p-story">为玄关顺手收纳而做。</textarea>
+      <div class="flex" style="margin-top:8px">
+        <button class="act" onclick="publish()">发布快照</button>
+        <span class="priv">预算 / 地址 / 联系方式永不进入快照</span>
+      </div>
+    </div>
+    <div class="card"><h3>事件日志</h3><div id="b-events"></div></div>
+  </div>
+</section>
+</main>
+<script>
+let CATALOG=null, CUR=null, LATEST=null;
+const $=id=>document.getElementById(id);
+const fmtCny=c=>c==null?'—':'¥'+(c/100).toFixed(2);
+async function api(method,path,body){
+  const r=await fetch(path,{method,headers:{'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});
+  return {status:r.status,obj:await r.json()};
+}
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('nav button').forEach(x=>x.classList.remove('on'));b.classList.add('on');
+  document.querySelectorAll('main section').forEach(s=>s.classList.remove('on'));
+  $('tab-'+b.dataset.tab).classList.add('on');
+  if(b.dataset.tab==='cases')loadCases();
+});
+function dimInputs(prefix,values){
+  return CATALOG.base_params.map(p=>{
+    if(p.kind==='int')return `<div><label>${p.label}</label><input id="${prefix}-${p.name}" value="${values?.[p.name]??p.default}"></div>`;
+    return `<div><label>${p.label}</label><div class="dimrow"><input id="${prefix}-${p.name}" value="${values?.[p.name]??p.default}"><select id="${prefix}-${p.name}-u"><option>mm</option><option>cm</option><option>in</option></select></div></div>`;
+  }).join('');
+}
+function lockInputs(prefix,values){
+  return CATALOG.lockable_derived.map(p=>
+    `<div><label>锁定${p.label}（留空=自动）</label><div class="dimrow"><input id="${prefix}-lock-${p.name}" value="${values?.[p.name]??''}"><select id="${prefix}-lock-${p.name}-u"><option>mm</option><option>cm</option><option>in</option></select></div></div>`).join('');
+}
+function gather(prefix){
+  const inputs={},units={},locks={};
+  CATALOG.base_params.forEach(p=>{
+    const el=$(`${prefix}-${p.name}`);if(!el)return;
+    inputs[p.name]=el.value;
+    const u=$(`${prefix}-${p.name}-u`);if(u)units[p.name]=u.value;
+  });
+  CATALOG.lockable_derived.forEach(p=>{
+    const el=$(`${prefix}-lock-${p.name}`);if(el&&el.value!=='')locks[p.name]=el.value;
+    const u=$(`${prefix}-lock-${p.name}-u`);if(u)units[p.name]=u.value;
+  });
+  return {inputs,units,locks};
+}
+function renderCompute(res){
+  let h='<table><tr><th>参数</th><th>值</th><th>来源</th></tr>';
+  for(const[k,v]of Object.entries(res.values))h+=`<tr><td>${v.label}</td><td>${v.display}</td><td>${{user:'填写',derived:'计算',locked:'锁定'}[v.source]||v.source}</td></tr>`;
+  h+='</table><h4>派生算式（可解释）</h4>';
+  for(const[k,v]of Object.entries(res.derived))h+=`<div class="muted">· ${v.formula}</div>`;
+  h+='<h4>诊断</h4>';
+  if(!res.diagnostics.length)h+='<span class="badge b-ok">无矛盾</span>';
+  res.diagnostics.forEach(d=>{
+    h+=`<div class="diag ${d.severity}"><b>[${d.code}] ${d.title}</b><br>${d.detail}`;
+    (d.suggestions||[]).forEach(s=>h+=`<div class="sug">→ ${s.action}</div>`);
+    h+='</div>';
+  });
+  h+='<h4>材料清单</h4><table><tr><th>#</th><th>部件</th><th>数量</th><th>尺寸(mm)</th><th>材料</th><th>面积m²</th><th>备注</th></tr>';
+  res.bom.forEach(l=>h+=`<tr><td>${l.seq}</td><td>${l.name}</td><td>${l.qty}</td><td>${l.w_mm} × ${l.h_mm}</td><td>${l.material_id}</td><td>${l.area_m2}</td><td>${l.flags.map(f=>`<span class="badge b-warn">${f}</span>`).join(' ')}</td></tr>`);
+  h+=`</table><p>报价估算 <b>${fmtCny(res.quote.quote_cents)}</b> · 交期约 ${res.quote.lead_time_days} 天 · 保养：${res.quote.care_text}</p>`;
+  return h;
+}
+async function init(){
+  const r=await api('GET','/api/catalog');CATALOG=r.obj;
+  $('c-mat').innerHTML=CATALOG.materials.filter(m=>m.id!=='back5').map(m=>`<option value="${m.id}">${m.name}</option>`).join('');
+  $('b-submat').innerHTML=$('c-mat').innerHTML;
+  $('c-dims').innerHTML=dimInputs('c');$('c-locks').innerHTML=lockInputs('c');
+  loadCases();
+}
+async function createDesign(){
+  const g=gather('c');
+  const body={title:$('c-title').value,customer_name:$('c-name').value,contact:$('c-contact').value,
+    address:$('c-addr').value,budget_cny:$('c-budget').value,material_id:$('c-mat').value,
+    notes:$('c-notes').value,...g};
+  const r=await api('POST','/api/designs',body);
+  if(r.status!==201){$('c-msg').textContent='错误：'+(r.obj.error?.message||'');return;}
+  const rev=r.obj.revision;
+  $('c-msg').innerHTML=`已创建设计 #${rev.design_id}，修订 v${rev.version}（可去“工坊后台”载入）`;
+  $('c-result').style.display='block';$('c-out').innerHTML=renderCompute(rev.solved);
+}
+async function loadCases(){
+  const r=await api('GET','/api/cases');
+  $('cases').innerHTML=r.obj.cases.length?r.obj.cases.map(c=>{const s=c.snapshot;
+    return `<div class="case"><b>${s.title}</b><div class="muted">${s.story||''}</div>
+    ${s.material?`<div>材料：${s.material}</div>`:''}
+    ${s.dimensions?`<div>尺寸：${Object.values(s.dimensions).join(' × ')}</div>`:''}
+    <div class="muted">溯源：v${s.source.revision_version} · ${s.source.param_hash} · ${s.published_at}</div></div>`;
+  }).join(''):'<span class="muted">暂无公开作品</span>';
+}
+async function loadDesign(){
+  const did=$('b-did').value;if(!did)return;
+  const r=await api('GET',`/api/designs/${did}`);
+  if(r.status!==200){$('b-meta').textContent=r.obj.error.message;return;}
+  CUR=r.obj;LATEST=CUR.revisions[0];
+  $('bench').style.display='block';
+  $('b-meta').textContent=`#${did} ${CUR.design.title} · 客户 ${CUR.design.customer_name} · 预算 ${fmtCny(CUR.design.budget_cents)}（私密） · 地址 ${CUR.design.address}（私密）`;
+  $('b-base').textContent=LATEST.version;
+  $('b-dims').innerHTML=dimInputs('b',LATEST.inputs);
+  $('b-locks').innerHTML=lockInputs('b',LATEST.locks);
+  renderRevs();renderConfs();renderImpact();renderEvents();renderAtts();
+}
+function renderRevs(){
+  $('b-revs').innerHTML='<table><tr><th>版本</th><th>状态</th><th>身份</th><th>hash</th><th>时间</th></tr>'+
+    CUR.revisions.map(r=>`<tr><td>v${r.version}</td><td><span class="badge ${r.status==='approved'?'b-ok':r.status==='superseded'?'b-warn':''}">${r.status}</span></td><td>${r.actor}</td><td>${r.param_hash}</td><td>${r.created_at}</td></tr>`).join('')+'</table>';
+}
+function renderConfs(){
+  $('b-confs').innerHTML='<h4>确认单（绑定获批版本）</h4><table><tr><th>ID</th><th>修订</th><th>报价</th><th>交期</th><th>状态</th><th>操作</th></tr>'+
+    CUR.confirmations.map(c=>`<tr><td>${c.id}</td><td>rev#${c.revision_id}</td><td>${fmtCny(c.quote_cents)}</td><td>${c.lead_time_days}天</td>
+    <td><span class="badge ${c.status==='invalidated'?'b-err':c.status==='accepted'?'b-ok':''}">${c.status}</span>${c.invalid_reason?`<div class="muted">${c.invalid_reason}</div>`:''}</td>
+    <td>${c.status==='active'?`<button class="ghost" onclick="acceptConf(${c.id})">客户接受</button>`:''}
+        ${c.status==='accepted'?`<button class="ghost" onclick="startWO(${c.id})">开工单</button>`:''}</td></tr>`).join('')+'</table>';
+  $('b-wos').innerHTML='<h4>工单</h4>'+(CUR.work_orders.length?'<table><tr><th>ID</th><th>状态</th><th>快照</th><th>操作</th></tr>'+
+    CUR.work_orders.map(w=>`<tr><td>${w.id}</td><td><span class="badge ${w.status==='cancelled'?'b-err':'b-ok'}">${w.status}</span>${w.cancel_reason?`<div class="muted">${w.cancel_reason}</div>`:''}</td>
+    <td class="muted">v${w.quote_snapshot.version} · ${fmtCny(w.quote_snapshot.quote_cents)} · ${w.quote_snapshot.param_hash}</td>
+    <td>${['scheduled','in_progress'].includes(w.status)?`<button class="ghost" onclick="cancelWO(${w.id})">撤销</button>`:''}</td></tr>`).join('')+'</table>':'<span class="muted">无</span>');
+}
+function renderImpact(){
+  const i=CUR.impact;let h='';
+  h+=`<p>失效确认单：${i.invalidated_confirmations.length?i.invalidated_confirmations.map(c=>`#${c.id}`).join(' '):'无'}</p>`;
+  h+='<p>需重审：</p>'+(i.needs_rereview.length?'<ul>'+i.needs_rereview.map(x=>`<li><span class="badge b-warn">${x.type}#${x.id}</span> ${x.reason}</li>`).join('')+'</ul>':'<span class="muted">无</span>');
+  if(i.bom_changes.length){h+='<p>BOM 变化：</p><table><tr><th>部件</th><th>变化</th><th>前</th><th>后</th></tr>'+i.bom_changes.map(c=>`<tr><td>${c.item}</td><td>${c.change}</td><td class="muted">${c.before?`${c.before.qty}× ${c.before.w_mm}×${c.before.h_mm} ${c.before.material_id}`:'—'}</td><td>${c.after?`${c.after.qty}× ${c.after.w_mm}×${c.after.h_mm} ${c.after.material_id}`:'—'}</td></tr>`).join('')+'</table>';}
+  if(i.affected_items.length)h+='<p>受影响项：'+i.affected_items.map(a=>`<span class="badge b-warn">${a.type}#${a.id} ${a.status||''}</span>`).join(' ')+'</p>';
+  $('b-impact').innerHTML=h;
+}
+function renderEvents(){
+  $('b-events').innerHTML='<table>'+CUR.events.map(e=>`<tr><td class="muted">${e.created_at}</td><td><b>${e.type}</b></td><td class="muted">${JSON.stringify(e.payload)}</td></tr>`).join('')+'</table>';
+}
+function renderAtts(){
+  $('b-atts').innerHTML=CUR.attachments.length?'<table><tr><th>ID</th><th>类型</th><th>状态</th><th>sha</th></tr>'+
+    CUR.attachments.map(a=>`<tr><td>${a.id}</td><td>${a.kind} (rev#${a.revision_id})</td><td><span class="badge ${a.status==='stale'?'b-err':a.status==='pending'?'b-warn':'b-ok'}">${a.status}</span></td><td>${a.sha||'—'}</td></tr>`).join('')+'</table>':'<span class="muted">无附件</span>';
+}
+async function dryCompute(){
+  const g=gather('b');
+  const r=await api('POST',`/api/revisions/${LATEST.id}/compute`,g);
+  $('b-compute').innerHTML=r.status===200?renderCompute(r.obj):`<div class="diag error">${r.obj.error.message}</div>`;
+}
+async function saveRevision(){
+  const g=gather('b');
+  const body={...g,actor:$('b-actor').value,base_version:LATEST.version};
+  const r=await api('POST',`/api/designs/${CUR.design.id}/revisions`,body);
+  if(r.status===409){$('b-msg').innerHTML=`<span class="badge b-err">并发冲突</span> ${r.obj.error.message}（服务器版本 v${r.obj.server_version}）`;return;}
+  if(r.status!==201){$('b-msg').textContent='错误：'+(r.obj.error?.message||'');return;}
+  $('b-msg').textContent=`已保存 v${r.obj.revision.version}`;await loadDesign();
+}
+async function approve(){
+  const r=await api('POST',`/api/revisions/${LATEST.id}/approve`,{approver:$('b-approver').value,manual_drawing_by:$('b-drawing').value||null});
+  if(r.status!==200){alert('审批被拒：'+r.obj.error.message+(r.obj.manual_review_items?'\n需人工项：'+r.obj.manual_review_items.join('；'):''));return;}
+  await loadDesign();
+}
+async function toolpath(){
+  const r=await api('POST',`/api/revisions/${LATEST.id}/toolpath`,{});
+  alert(`HTTP ${r.status} · ${r.obj.error.code}\n${r.obj.error.message}`);
+}
+async function acceptConf(id){await api('POST',`/api/confirmations/${id}/accept`,{});await loadDesign();}
+async function startWO(id){await api('POST',`/api/confirmations/${id}/start_work_order`,{});await loadDesign();}
+async function cancelWO(id){const reason=prompt('撤销原因','客户改尺寸，旧方案作废');if(reason==null)return;await api('POST',`/api/work_orders/${id}/cancel`,{reason});await loadDesign();}
+async function substitute(){
+  const r=await api('POST',`/api/revisions/${LATEST.id}/substitute`,{to_material:$('b-submat').value,actor:'maker'});
+  if(r.status!==201){alert(r.obj.error.message);return;}
+  alert(`替代完成 → 新修订 v${r.obj.new_revision.version}\n价差：${fmtCny(r.obj.impact.price_delta_cents)}\n板厚变化：${r.obj.impact.thickness_changed}\n需重审：是`);
+  await loadDesign();
+}
+async function genAttachment(){
+  const r=await api('POST',`/api/revisions/${LATEST.id}/attachments`,{kind:$('b-attkind').value,delay_ms:+$('b-delay').value});
+  alert(`附件 #${r.obj.attachment_id} ${r.obj.note}`);setTimeout(loadDesign,+$('b-delay').value+400);
+}
+async function deliveryPackage(){
+  const r=await api('GET',`/api/revisions/${LATEST.id}/delivery_package`);
+  $('b-pkg').innerHTML='<h4>交付包（可溯源到实际采用的图纸与说明）</h4><pre>'+JSON.stringify(r.obj,null,1)+'</pre>';
+}
+async function publish(){
+  const r=await api('POST',`/api/designs/${CUR.design.id}/publish`,{title:$('p-title').value,story:$('p-story').value,show_dimensions:$('p-dims').value==='1',show_material:$('p-mat').value==='1',photos:[]});
+  if(r.status!==201){alert(r.obj.error.message);return;}
+  alert('已发布快照 #'+r.obj.case_id+'\n'+r.obj.privacy_note);
+}
+init();
+</script>
+</body>
+</html>
